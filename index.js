@@ -40,7 +40,6 @@ var commandQueue = [];
 
 const initSetup = () => {
 	Object.keys(devices).forEach(element => {
-		console.log(element);
 		currentState[element] = {};
 		currentState[element].fan = 'off';
 		currentState[element].light = 'off';
@@ -73,8 +72,6 @@ setTimeout(processCommands, commandDelay);
 
 const convertSpeedToMode = (speed) => {
 	for (var element in fanStatus) {
-		console.log(fanStatus[element]);
-		console.log(speed);
 		if (speed <= fanStatus[element]) {
 			return element;
 		}
@@ -90,7 +87,6 @@ console.log('starting up webserver');
 http.createServer((req, res) => {
 	res.writeHead(200, {'Content-Type': 'text/html'});
 	let q = url.parse(req.url, true).query;
-	console.log(q.device);
 
 	if (!q.device || !(q.device in devices)) {
 		res.end('error');
@@ -107,21 +103,24 @@ http.createServer((req, res) => {
 			res.end(fanStatus[currentState[q.device].fan]);
 			break;
 		case 'light-on':
-			if (devices[q.device].light === 'off') {
+			if (currentState[q.device].light === 'off') {
+				console.log(`turning ${q.device} light on`);
 				currentState[q.device].light = 'on';
 				queueCommand(q.device, 'light');
 			}
 			res.end('1');
 			break;
 		case 'light-off':
-			if (devices[q.device].light !== 'off') {
+			if (currentState[q.device].light !== 'off') {
+				console.log(`turning ${q.device} light off`);
 				currentState[q.device].light = 'off';
 				queueCommand(q.device, 'light');
 			}
 			res.end('1');
 			break;
 		case 'fan-on':
-			if (devices[q.device].fan === 'off') {
+			if (currentState[q.device].fan === 'off') {
+				console.log(`turning ${q.device} fan on`);
 				// by default, set fan speed to medium
 				currentState[q.device].fan = 'medium';
 				queueCommand(q.device, 'medium');
@@ -129,12 +128,14 @@ http.createServer((req, res) => {
 			res.end(1);
 			break;
 		case 'fan-off':
+			console.log(`turning ${q.device} fan off`);
 			queueCommand(q.device, 'off');
 			res.end('1');
 			break;
 		case 'fan-set':
 			const fanSpeed = convertSpeedToMode(q.level);
 			currentState[q.device].fan = fanSpeed;
+			console.log(`turning ${q.device} fan to ${q.level} / ${fanSpeed}`);
 			queueCommand(q.device, fanSpeed);
 			res.end('1');
 			break;
