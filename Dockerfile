@@ -16,4 +16,4 @@ COPY fan-recordings fan-recordings
 
 COPY index.js .
 
-CMD nodejs index.js
+CMD node index.js

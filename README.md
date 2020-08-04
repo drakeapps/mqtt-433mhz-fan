@@ -14,6 +14,10 @@ Uses:
 
 Web server is run in docker, though to increase reliability of rpitx, the `/boot/config.txt` will need to be modified outside of docker
 
+The docker image is hosted on docker hub, but this is my specific version with specific recordings. If there is a demand for it, this can be refactored to reflect a more generic version
+
+This repo includes a workflow to build it and push it to docker hub. I would recommend changing the settings to match your info as this makes building the image much easier
+
 ## Raspberry Pi Modification
 
 Set the GPU frequency as done in the install.sh

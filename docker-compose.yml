@@ -1,7 +1,7 @@
 version: '3'
 
 services:
-    light-server:
+    fan-server:
         image: drakeapps/fan-server
         privileged: true
         ports:
