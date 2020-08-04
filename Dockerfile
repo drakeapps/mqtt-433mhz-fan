@@ -1,4 +1,4 @@
-FROM balenalib/raspberry-pi-nodejs
+FROM balenalib/raspberry-pi-node
 
 RUN apt update && apt install git build-essential
 
