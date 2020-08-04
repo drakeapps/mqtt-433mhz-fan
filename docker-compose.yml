@@ -1,0 +1,10 @@
+version: '3'
+
+services:
+    light-server:
+        image: drakeapps/fan-server
+        privileged: true
+        ports:
+            - "80:80"
+        restart: always
+    

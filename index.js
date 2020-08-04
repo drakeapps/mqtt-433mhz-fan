@@ -10,8 +10,8 @@ let devices = {
 	}
 };
 
-const iqDirectory = '/home/pi/fan-recordings/';
-const execDirectory = '/home/pi/rpitx/';
+const iqDirectory = '/usr/src/app/fan-recordings/';
+const execDirectory = '/usr/src/app/rpitx/';
 
 // delay between executing commands
 const commandDelay = 100;
