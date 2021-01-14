@@ -7,4 +7,6 @@ services:
         ports:
             - "80:80"
         restart: always
+        volumes:
+            - ./config/:/usr/src/app/config
     
