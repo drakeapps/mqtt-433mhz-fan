@@ -1,0 +1,23 @@
+{
+  "name": "fan-server",
+  "version": "1.0.0",
+  "description": "This is similar to the [433 Mhz Light Server](https://github.com/drakeapps/light-server) but with signals that are just recorded and replayed.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/drakeapps/fan-server.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/drakeapps/fan-server/issues"
+  },
+  "homepage": "https://github.com/drakeapps/fan-server#readme",
+  "dependencies": {
+    "mqtt": "^4.2.6",
+    "yargs": "^16.2.0"
+  }
+}

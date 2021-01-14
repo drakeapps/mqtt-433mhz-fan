@@ -1,4 +1,4 @@
-# 433 Mhz Fan HomeKit Server
+# 433 MHz Fan MQTT (HomeKit) Server
 
 This is similar to the [433 Mhz Light Server](https://github.com/drakeapps/light-server) but with signals that are just recorded and replayed.
 
@@ -24,3 +24,29 @@ Set the GPU frequency as done in the install.sh
 
 https://github.com/F5OEO/rpitx/blob/master/install.sh#L35
 
+## Homebridge Config
+
+```
+{
+	"accessory": "mqttthing",
+	"type": "lightbuld",
+	"name": "Living Room Fan Light",
+	"url": "mqtt://o.xrho.com",
+	"topics": {
+		"getOn": "familyRoomFan/getLightOn",
+		"setOn": "familyRoomFan/setLightOn"
+	}
+},
+{
+	"accessory": "mqttthing",
+	"type": "fan",
+	"name": "Living Room Fan",
+	"url": "mqtt://o.xrho.com",
+	"topics": {
+		"getOn": "familyRoomFan/getFanOn",
+		"setOn": "familyRoomFan/setFanOn",
+		"getRotationSpeed": "familyRoomFan/getRotationSpeed",
+		"setRotationSpeed": "familyRoomFan/setRotationSpeed",
+	}
+}
+```

@@ -1,17 +1,34 @@
 
+const yargs = require('yargs');
+const mqtt = require('mqtt');
+const { exec } = require('child_process');
 
-let devices = {
-	family: {
-		off: 	'fan0.iq',
-		low:	'fan1.iq',
-		medium:	'fan2.iq',
-		high:	'fan3.iq',
-		light:	'light.iq'
-	}
-};
+const devices = require('./config/config.js');
 
-const iqDirectory = '/usr/src/app/fan-recordings/';
-const execDirectory = '/usr/src/app/rpitx/';
+const argv = yargs
+	.option('mqttHost', {
+		description: 'Hostname of MQTT broker',
+		alias: 'mqtt',
+		type: 'string'
+	})
+	.option('iqDirectory', {
+		description: 'Path to codesend binary',
+		alias: 'iq',
+		type: 'string'
+	})
+	.option('execDirectory', {
+		description: 'Path to codesend binary',
+		alias: 'exec',
+		type: 'string'
+	})
+	.help()
+	.alias('help', 'h')
+	.argv;
+
+
+const iqDirectory = (argv.iqDirectory) ? argv.iqDirectory : '/usr/src/app/fan-recordings/';
+const execDirectory = (argv.execDirectory) ? argv.execDirectory : '/usr/src/app/rpitx/';
+const mqttHost = (argv.mqttHost) ? argv.mqttHost : 'localhost';
 
 // delay between executing commands
 const commandDelay = 100;
@@ -23,11 +40,6 @@ const fanStatus = {
 	medium: 50,
 	high: 100
 };
-
-
-var http = require('http');
-var url = require('url');
-const { exec } = require('child_process');
 
 
 // maintain a current state of the fans
@@ -80,70 +92,85 @@ const convertSpeedToMode = (speed) => {
 };
 
 
+
 initSetup();
 
-console.log('starting up webserver');
+console.log(`connecting to mqtt broker: ${mqttHost}`);
+const client = mqtt.connect(`mqtt://${mqttHost}`);
 
-http.createServer((req, res) => {
-	res.writeHead(200, {'Content-Type': 'text/html'});
-	let q = url.parse(req.url, true).query;
+client.on('connect', () => {
+	console.log('mqtt connected');
+	Object.keys(devices).forEach((item) => {
+		console.log(`subscribing to ${item} statuses`);
+		client.publish(`${item}/connected`, 'true');
+		client.subscribe(`${item}/setFanOn`);
+		client.subscribe(`${item}/setRotationSpeed`);
+		if (devices[item]['light']) {
+			client.subscribe(`${item}/setLightOn`);
+		}
+	});
+});
 
-	if (!q.device || !(q.device in devices)) {
-		res.end('error');
+
+client.on('message', (topic, message) => {
+	topic = topic.toString();
+	message = message.toString();
+
+	console.log(`new message\ntopic: ${topic}\nmessage: ${message}`);
+
+	if (topic.split('/').length != 2) {
+		return;
 	}
 
-	switch (q.mode) {
-		case 'fan-status':
-			res.end((currentState[q.device].fan !== 'off') ? '1' : '0');
-			break;
-		case 'light-status':
-			res.end((currentState[q.device].light !== 'off') ? '1' : '0');
-			break;
-		case 'fan-speed':
-			res.end(fanStatus[currentState[q.device].fan]);
-			break;
-		case 'light-on':
-			if (currentState[q.device].light === 'off') {
-				console.log(`turning ${q.device} light on`);
-				currentState[q.device].light = 'on';
-				queueCommand(q.device, 'light');
+	let [device, action] = topic.split('/');
+
+	switch (action) {
+		case 'lightSetOn':
+			if (message === 'true') {
+				if (currentState[device].light === 'off') {
+					console.log(`turning ${device} light on`);
+					currentState[device].light = 'on';
+					queueCommand(device, 'light');
+					client.publish(`${device}/getLightOn`, 'true');
+				}
+			} else {
+				if (currentState[device].light !== 'off') {
+					console.log(`turning ${device} light off`);
+					currentState[device].light = 'off';
+					queueCommand(device, 'light');
+					client.publish(`${device}/getLightOn`, 'false');
+				}
 			}
-			res.end('1');
 			break;
-		case 'light-off':
-			if (currentState[q.device].light !== 'off') {
-				console.log(`turning ${q.device} light off`);
-				currentState[q.device].light = 'off';
-				queueCommand(q.device, 'light');
+		case 'fanSetOn':
+			if (message === 'true') {
+				if (currentState[device].fan === 'off') {
+					console.log(`turning ${device} fan on`);
+					// by default, set fan speed to medium
+					currentState[device].fan = 'medium';
+					queueCommand(device, 'medium');
+					client.publish(`${device}/getFanOn`, 'true');
+					client.publish(`${device}/getRotationSpeed`, fanStatus[fanSpeed]);
+				}
+			} else {
+				console.log(`turning ${device} fan off`);
+				queueCommand(device, 'off');
+				client.publish(`${device}/getFanOn`, 'false');
 			}
-			res.end('1');
 			break;
-		case 'fan-on':
-			if (currentState[q.device].fan === 'off') {
-				console.log(`turning ${q.device} fan on`);
-				// by default, set fan speed to medium
-				currentState[q.device].fan = 'medium';
-				queueCommand(q.device, 'medium');
-			}
-			res.end(1);
-			break;
-		case 'fan-off':
-			console.log(`turning ${q.device} fan off`);
-			queueCommand(q.device, 'off');
-			res.end('1');
-			break;
-		case 'fan-set':
-			const fanSpeed = convertSpeedToMode(q.level);
-			currentState[q.device].fan = fanSpeed;
-			console.log(`turning ${q.device} fan to ${q.level} / ${fanSpeed}`);
-			queueCommand(q.device, fanSpeed);
-			res.end('1');
+		case 'setRotationSpeed':
+			const fanSpeed = convertSpeedToMode(message);
+			currentState[device].fan = fanSpeed;
+			console.log(`turning ${device} fan to ${q.level} / ${fanSpeed}`);
+			queueCommand(device, fanSpeed);
+			client.publish(`${device}/getFanOn`, 'true');
+			client.publish(`${device}/getRotationSpeed`, fanStatus[fanSpeed]);
 			break;
 
 		default:
-			res.end('no mode specified');
+			console.log('invalid message');
 	}
-}).listen(80);
+});
 
 
 
