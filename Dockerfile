@@ -12,6 +12,9 @@ RUN git clone https://github.com/F5OEO/rpitx && \
 	./install.sh && \
 	cd ..
 
+COPY package.json package-lock.json ./
+RUN npm i
+
 COPY fan-recordings fan-recordings
 
 COPY index.js .
