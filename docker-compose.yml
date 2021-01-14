@@ -7,6 +7,7 @@ services:
         ports:
             - "80:80"
         restart: always
+        command: "node index.js --mqttHost ${MQTTHOST}"
         volumes:
             - ./config/:/usr/src/app/config
     
