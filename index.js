@@ -150,7 +150,7 @@ client.on('message', (topic, message) => {
 					currentState[device].fan = 'medium';
 					queueCommand(device, 'medium');
 					client.publish(`${device}/getFanOn`, 'true');
-					client.publish(`${device}/getRotationSpeed`, fanStatus[fanSpeed]);
+					client.publish(`${device}/getRotationSpeed`, fanStatus['medium']);
 				}
 			} else {
 				console.log(`turning ${device} fan off`);
