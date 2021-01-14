@@ -125,7 +125,7 @@ client.on('message', (topic, message) => {
 	let [device, action] = topic.split('/');
 
 	switch (action) {
-		case 'lightSetOn':
+		case 'setLightOn':
 			if (message === 'true') {
 				if (currentState[device].light === 'off') {
 					console.log(`turning ${device} light on`);
@@ -142,7 +142,7 @@ client.on('message', (topic, message) => {
 				}
 			}
 			break;
-		case 'fanSetOn':
+		case 'setFanOn':
 			if (message === 'true') {
 				if (currentState[device].fan === 'off') {
 					console.log(`turning ${device} fan on`);
