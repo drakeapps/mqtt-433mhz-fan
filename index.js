@@ -150,7 +150,7 @@ client.on('message', (topic, message) => {
 					currentState[device].fan = 'medium';
 					queueCommand(device, 'medium');
 					client.publish(`${device}/getFanOn`, 'true');
-					client.publish(`${device}/getRotationSpeed`, fanStatus['medium']);
+					client.publish(`${device}/getRotationSpeed`, fanStatus['medium'].toString());
 				}
 			} else {
 				console.log(`turning ${device} fan off`);
@@ -164,7 +164,7 @@ client.on('message', (topic, message) => {
 			console.log(`turning ${device} fan to ${message} / ${fanSpeed}`);
 			queueCommand(device, fanSpeed);
 			client.publish(`${device}/getFanOn`, 'true');
-			client.publish(`${device}/getRotationSpeed`, fanStatus[fanSpeed]);
+			client.publish(`${device}/getRotationSpeed`, fanStatus[fanSpeed].toString());
 			break;
 
 		default:
