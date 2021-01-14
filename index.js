@@ -161,7 +161,7 @@ client.on('message', (topic, message) => {
 		case 'setRotationSpeed':
 			const fanSpeed = convertSpeedToMode(message);
 			currentState[device].fan = fanSpeed;
-			console.log(`turning ${device} fan to ${q.level} / ${fanSpeed}`);
+			console.log(`turning ${device} fan to ${message} / ${fanSpeed}`);
 			queueCommand(device, fanSpeed);
 			client.publish(`${device}/getFanOn`, 'true');
 			client.publish(`${device}/getRotationSpeed`, fanStatus[fanSpeed]);

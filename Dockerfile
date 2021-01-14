@@ -15,7 +15,6 @@ RUN git clone https://github.com/F5OEO/rpitx && \
 COPY package.json package-lock.json ./
 RUN npm i
 
-COPY fan-recordings fan-recordings
 
 COPY index.js .
 

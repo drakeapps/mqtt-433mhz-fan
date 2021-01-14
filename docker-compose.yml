@@ -10,4 +10,5 @@ services:
         command: "node index.js --mqttHost ${MQTTHOST}"
         volumes:
             - ./config/:/usr/src/app/config
+            - ./fan-recordings:/usr/src/app/fan-recordings
     
